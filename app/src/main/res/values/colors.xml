@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="colorPrimary">@color/white</color>
+    <color name="colorPrimaryDark">@color/black</color>
+    <color name="colorAccent">#0077FF</color>
+    <color name="textColor">@color/black</color>
+    <color name="secondaryTextColor">#a0a0a0</color>
+    <color name="listDividerBackground">#DDDDDD</color>
+    <color name="scanCornerColor">#1379D6</color>
+    <color name="deviceDetailTextColor">#999999</color>
+</resources>
