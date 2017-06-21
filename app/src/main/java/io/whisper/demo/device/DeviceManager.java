@@ -6,6 +6,7 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -27,6 +28,7 @@ import java.util.Map;
 
 import io.whisper.demo.MainApp;
 
+import io.whisper.demo.R;
 import io.whisper.managed.core.*;
 import io.whisper.managed.session.Manager;
 import io.whisper.managed.exceptions.WhisperException;
@@ -72,6 +74,8 @@ public class DeviceManager implements WhisperHandler {
     private CameraManager cameraManager = null;
     private String cameraId = null;
     private boolean isTorchAvailbale = false;
+    private MediaPlayer audioPlayer = null;
+    private float audioVolume = 1;
 
     public DeviceManager() {
 		super();
@@ -380,6 +384,21 @@ public class DeviceManager implements WhisperHandler {
                     handlerMessage.obj = brightness;
                     mainHandler.sendMessage(handlerMessage);
                 }
+
+                Object ring = msg.opt("ring");
+                if (ring != null) {
+                    if ((Boolean)ring) {
+                        startRing(null);
+                    }
+                    else {
+                        stopRing(null);
+                    }
+                }
+
+                Object volume = msg.opt("volume");
+                if (torch != null) {
+                    setVolume(((Number)volume).floatValue(), null);
+                }
             }
             else if (msgType.equals("status") || msgType.equals("sync")) {
                 HashMap<String, Object> newStatus = new HashMap();
@@ -555,6 +574,9 @@ public class DeviceManager implements WhisperHandler {
 
         selfStatus.put("brightness", MainApp.getScreenBrightness());
 
+        selfStatus.put("ring", audioPlayer != null ? audioPlayer.isPlaying() : false);
+        selfStatus.put("volume", audioVolume);
+
         return selfStatus;
     }
 
@@ -637,6 +659,107 @@ public class DeviceManager implements WhisperHandler {
 
             HashMap<String, Object> msg = new HashMap();
             msg.put("brightness", brightness);
+            syncSelfStatus(msg);
+        }
+
+        return result;
+    }
+
+    public boolean startRing(Device device) {
+        boolean result = false;
+
+        if (device != null) {
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("type", "modify");
+                jsonObject.put("ring", true);
+                result = sendMessage(jsonObject, device);
+            }
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            if (audioPlayer == null) {
+                audioPlayer = MediaPlayer.create(MainApp.getAppContext(), R.raw.audio);
+                audioPlayer.setLooping(true);
+
+                audioPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        HashMap<String, Object> msg = new HashMap();
+                        msg.put("ring", false);
+                        syncSelfStatus(msg);
+                    }
+                });
+            }
+
+            audioPlayer.start();
+            audioPlayer.setVolume(audioVolume, audioVolume);
+
+            result = true;
+
+            HashMap<String, Object> msg = new HashMap();
+            msg.put("ring", true);
+            syncSelfStatus(msg);
+        }
+
+        return result;
+    }
+
+    public boolean stopRing(Device device) {
+        boolean result = false;
+
+        if (device != null) {
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("type", "modify");
+                jsonObject.put("ring", false);
+                result = sendMessage(jsonObject, device);
+            }
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            if (audioPlayer != null && audioPlayer.isPlaying()) {
+                audioPlayer.pause();
+            }
+
+            result = true;
+
+            HashMap<String, Object> msg = new HashMap();
+            msg.put("ring", false);
+            syncSelfStatus(msg);
+        }
+
+        return result;
+    }
+
+    public boolean setVolume(float volume, Device device) {
+        boolean result = false;
+
+        if (device != null) {
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("type", "modify");
+                jsonObject.put("volume", volume);
+                result = sendMessage(jsonObject, device);
+            }
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            audioVolume = volume;
+            if (audioPlayer != null) {
+                audioPlayer.setVolume(volume, volume);
+            }
+
+            result = true;
+
+            HashMap<String, Object> msg = new HashMap();
+            msg.put("volume", volume);
             syncSelfStatus(msg);
         }
 

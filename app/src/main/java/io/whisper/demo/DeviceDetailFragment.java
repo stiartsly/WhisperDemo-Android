@@ -101,7 +101,7 @@ public class DeviceDetailFragment extends Fragment {
         mSeekBarBrightness.setProgress(mSeekBarBrightness.getMax() / 2);
         mSeekBarBrightness.setOnSeekBarChangeListener(seekBarBrightnessChangeListener);
         mButtonRing.setOnClickListener(buttonRingOnClick);
-        mSeekBarVolume.setProgress(mSeekBarVolume.getMax() / 2);
+        mSeekBarVolume.setProgress(mSeekBarVolume.getMax());
         mSeekBarVolume.setOnSeekBarChangeListener(seekBarVolumeChangeListener);
 
         return rootView;
@@ -144,6 +144,17 @@ public class DeviceDetailFragment extends Fragment {
         if (brightness != null) {
             int newValue = (int) (((Number) brightness).floatValue() * mSeekBarBrightness.getMax());
             mSeekBarBrightness.setProgress(newValue);
+        }
+
+        Object ring = status.get("ring");
+        if (ring != null) {
+            mButtonRing.setSelected((Boolean)ring);
+        }
+
+        Object volume = status.get("volume");
+        if (volume != null) {
+            int newValue = (int) (((Number) volume).floatValue() * mSeekBarVolume.getMax());
+            mSeekBarVolume.setProgress(newValue);
         }
     }
 
@@ -222,7 +233,7 @@ public class DeviceDetailFragment extends Fragment {
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    float newValue = ((float) seekBar.getProgress()) / mSeekBarBrightness.getMax();
+                    float newValue = ((float) seekBar.getProgress()) / seekBar.getMax();
                     if (!DeviceManager.sharedManager().setBrightness(newValue, mDevice)) {
                         Toast.makeText(getActivity(), "修改亮度失败", Toast.LENGTH_SHORT).show();
 
@@ -237,7 +248,22 @@ public class DeviceDetailFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     boolean playing = mButtonRing.isSelected();
-                    mButtonRing.setSelected(!playing);
+                    if (playing) {
+                        if (DeviceManager.sharedManager().stopRing(mDevice)) {
+                            mButtonRing.setSelected(false);
+                        }
+                        else {
+                            Toast.makeText(getActivity(), "停止铃声失败", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else {
+                        if (DeviceManager.sharedManager().startRing(mDevice)) {
+                            mButtonRing.setSelected(true);
+                        }
+                        else {
+                            Toast.makeText(getActivity(), "开启铃声失败", Toast.LENGTH_SHORT).show();
+                        }
+                    }
                 }
             };
 
@@ -250,12 +276,18 @@ public class DeviceDetailFragment extends Fragment {
 
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-
+                    seekBar.setTag(seekBar.getProgress());
                 }
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
+                    float newValue = ((float) seekBar.getProgress()) / seekBar.getMax();
+                    if (!DeviceManager.sharedManager().setVolume(newValue, mDevice)) {
+                        Toast.makeText(getActivity(), "修改音量失败", Toast.LENGTH_SHORT).show();
 
+                        Integer oldValue = (Integer) seekBar.getTag();
+                        seekBar.setProgress(oldValue);
+                    }
                 }
             };
 }

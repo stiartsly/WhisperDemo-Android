@@ -209,6 +209,10 @@ public class DeviceListActivity extends AppCompatActivity {
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (holder.mDevice != null && !holder.mDevice.online) {
+                        return;
+                    }
+
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
                         if (holder.mDevice != null) {
