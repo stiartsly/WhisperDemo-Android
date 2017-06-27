@@ -24,7 +24,7 @@ import android.widget.Toast;
 
 import io.whisper.demo.device.Device;
 import io.whisper.demo.device.DeviceManager;
-import io.whisper.managed.exceptions.WhisperException;
+import io.whisper.exceptions.WhisperException;
 
 import java.util.List;
 

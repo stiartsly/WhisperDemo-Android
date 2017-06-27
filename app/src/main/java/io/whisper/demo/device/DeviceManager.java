@@ -29,9 +29,9 @@ import java.util.Map;
 import io.whisper.demo.MainApp;
 
 import io.whisper.demo.R;
-import io.whisper.managed.core.*;
-import io.whisper.managed.session.Manager;
-import io.whisper.managed.exceptions.WhisperException;
+import io.whisper.core.*;
+import io.whisper.session.Manager;
+import io.whisper.exceptions.WhisperException;
 
 public class DeviceManager implements WhisperHandler {
 
@@ -244,8 +244,8 @@ public class DeviceManager implements WhisperHandler {
 
             Manager.Options options = new Manager.Options();
             options.setTransports(Manager.Options.TRANSPORT_ICE);
-            options.setStunServer(stunServer);
-            options.setTurnServer(turnServer);
+            options.setStunHost(stunServer);
+            options.setTurnHost(turnServer);
             options.setTurnUserName(turnUsername);
             options.setTurnPassword(turnPassword);
             Manager.getInstance(whisper, options);
@@ -396,7 +396,7 @@ public class DeviceManager implements WhisperHandler {
                 }
 
                 Object volume = msg.opt("volume");
-                if (torch != null) {
+                if (volume != null) {
                     setVolume(((Number)volume).floatValue(), null);
                 }
             }

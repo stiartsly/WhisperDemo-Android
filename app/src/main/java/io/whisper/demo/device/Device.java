@@ -8,7 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import io.whisper.demo.MainApp;
 
-import io.whisper.managed.core.FriendInfo;
+import io.whisper.core.FriendInfo;
 
 public class Device {
 

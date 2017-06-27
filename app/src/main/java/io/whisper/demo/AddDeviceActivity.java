@@ -20,7 +20,7 @@ import cn.bingoogolapple.qrcode.core.QRCodeView;
 import cn.bingoogolapple.qrcode.zxing.QRCodeDecoder;
 import cn.bingoogolapple.qrcode.zxing.ZXingView;
 import io.whisper.demo.device.DeviceManager;
-import io.whisper.managed.exceptions.WhisperException;
+import io.whisper.exceptions.WhisperException;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
