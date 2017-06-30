@@ -50,8 +50,8 @@ public class DeviceManager implements WhisperHandler {
     public static final String ACTION_DEVICE_STATUS_CHANGED =
             "io.whisper.demo.DEVICE_STATUS_CHANGED";
 
-	private static final String appId  = "7sRQjDsniyuHdZ9zsQU9DZbMLtQGLBWZ78yHWgjPpTKm";
-	private static final String appKey = "6tzPPAgSACJdScX79wuzMNPQTWkRLZ4qEdhLcZU6q4B9";
+	private static final String appId  = "HMWL2aNJKnyjtL7K3e7fCHxFVQ9fCpSW8xvpJG3LtFWW";
+	private static final String appKey = "8e9VnqPJw5NbK2QztwpyzwysT5yQ84i3vWB43wxy2BJz";
 	private static final String apiServerUrl  = "https://whisper.freeddns.org:8443/web/api";
 	private static final String mqttServerUri = "ssl://whisper.freeddns.org:8883";
 	private static final String stunServer  = "whisper.freeddns.org";
