@@ -195,7 +195,7 @@
                 android:layout_centerVertical="true"
                 android:background="#00000000"
                 android:scaleType="centerInside"
-                android:src="@drawable/audio_play" />
+                android:src="@drawable/media_play" />
 
         </RelativeLayout>
 
@@ -234,5 +234,39 @@
             android:background="@color/listDividerBackground" />
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/device_detail_video"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:padding="8dp"
+        android:textColor="@color/deviceDetailTextColor"
+        android:textSize="@dimen/section_header_text_size"
+        android:text="摄像头" />
+
+    <android.support.percent.PercentFrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp">
+
+        <SurfaceView
+            android:id="@+id/surfaceView"
+            android:background="@color/black"
+            app:layout_widthPercent="100%"
+            app:layout_aspectRatio="133%" />
+
+        <ImageButton
+            android:id="@+id/buttonVideoPlay"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center"
+            android:background="#00000000"
+            android:scaleType="centerInside"
+            android:src="@drawable/media_play" />
+
+    </android.support.percent.PercentFrameLayout>
 
 </LinearLayout>
