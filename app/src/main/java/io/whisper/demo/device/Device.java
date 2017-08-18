@@ -1,19 +1,43 @@
 package io.whisper.demo.device;
 
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.util.Log;
+import android.view.View;
 
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
+import org.json.JSONObject;
 
+import java.util.HashMap;
+
+import io.whisper.core.Whisper;
 import io.whisper.demo.MainApp;
 
 import io.whisper.core.FriendInfo;
+import io.whisper.demo.VideoDecoder;
+import io.whisper.exceptions.WhisperException;
+import io.whisper.session.AbstractStreamHandler;
+import io.whisper.session.Manager;
+import io.whisper.session.Session;
+import io.whisper.session.SessionRequestCompleteHandler;
+import io.whisper.session.Stream;
+import io.whisper.session.StreamState;
+import io.whisper.session.StreamType;
+import io.whisper.session.TransportType;
 
-public class Device {
+public class Device extends AbstractStreamHandler {
+
+    private static final String TAG = Device.class.getSimpleName();
 
 	public FriendInfo deviceInfo;
 	public boolean online;
+    public HashMap<String, Object> status;
+
+    private Session mSession;
+    private Stream mStream;
+    private String mSdp;
+    private StreamState mState = StreamState.Closed;
+
+    private VideoDecoder mVideoDecoder;
+    private boolean mRemotePlaying = false;
 
 	public String getDeviceId() {
 		return deviceInfo.getUserId();
@@ -31,142 +55,230 @@ public class Device {
 		return deviceName;
 	}
 
-	private ConnectTask connectTask;
-//	private int sessionId;
+	public boolean startVideo(View videoView) {
+        try {
+            if (mStream == null) {
+                if (mSession == null) {
+                    String target = getDeviceId() + "@" + getDeviceId();
+                    mSession = Manager.getInstance().newSession(target, TransportType.ICE);
+                }
 
-	public boolean connect()
-	{
-		return connect(false);
+                mStream = mSession.addStream(StreamType.Application, 0, this);
+            }
+            else if (mState == StreamState.TransportReady) {
+                sendSessionRequest();
+            }
+            else if (mState == StreamState.Connected) {
+                sendVideoCommand();
+            }
+
+            if (mVideoDecoder == null) {
+                mVideoDecoder = new VideoDecoder();
+            }
+
+            mVideoDecoder.configure(videoView, videoView.getWidth(), videoView.getHeight());
+            mVideoDecoder.start();
+            return true;
+        }
+        catch (WhisperException e) {
+            e.printStackTrace();
+            return false;
+        }
 	}
 
-	public boolean connect(boolean allowUpdatePort)
-	{
-//		if (sessionId > 0 && portFordwordId > 0)
+	public void stopVideo() {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("type", "modify");
+            jsonObject.put("camera", false);
 
-		if (!online)
-			return false;
+            Whisper.getInstance().sendFriendMessage(getDeviceId(), jsonObject.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-		if (connectTask == null) {
-			connectTask = new ConnectTask();
-			connectTask.allowUpdatePort = allowUpdatePort;
-			connectTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-		}
+        if (mVideoDecoder != null) {
+            mVideoDecoder.stop();
+            mVideoDecoder = null;
+        }
 
-		return false;
+        if (!mRemotePlaying) {
+            disconnect();
+        }
 	}
 
-	public void disconnect()
-	{
-//		if (sessionId > 0) {
-//			new DisconnectTask()..executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, sessionId, portFordwordId);
-//		}
+    public void disconnect() {
+        mRemotePlaying = false;
+        mSdp = null;
 
-//		sessionId = 0;
-	}
-	
-//	private Handler mainHandler = new MainHandler();
-//	private class MainHandler extends Handler {
-//
-//		public MainHandler(){
-//			super(Looper.getMainLooper());
-//		}
-//
-//        @Override
-//        public void handleMessage(Message msg) {
-//			super.handleMessage(msg);
-//        	switch (msg.what) {
-//            case 1:
-//            	onSessionReceivedData(msg.arg1, msg.arg2, (byte[]) msg.obj);
-//                break;
-//            case 2:
-//            	onSessionClosed(msg.arg1, msg.arg2);
-//                break;
-//            default:
-//                break;
-//            }
-//        }
-//	};
-	
-	private class ConnectTask extends AsyncTask<Void, Void, Boolean> {
-		boolean allowUpdatePort = false;
-		private ReentrantLock lock;
-		private Condition condition;
+        if (mSession != null) {
+            if (mStream != null) {
+                Stream stream = mStream;
+                mStream = null;
 
-		@Override
-		protected Boolean doInBackground(Void... params) {
-//			if (sessionId == 0) {vv
-//				int result = SessionManager.getInstance().connect(deviceId, "", 3, new PeerSessionHandler() {
-//					@Override
-//					public void onSessionReceivedData(int sessionId, int channelId, byte[] data)
-//					{
-//						Message msg = new Message();
-//						msg.what = 1;
-//						msg.arg1 = sessionId;
-//						msg.arg2 = channelId;
-//						msg.obj = data;
-//						mainHandler.sendMessage(msg);
-//					}
-//
-//					@Override
-//					public void onSessionClosed(int sessionId, int status)
-//					{
-//						Message msg = new Message();
-//						msg.what = 2;
-//						msg.arg1 = sessionId;
-//						msg.arg2 = status;
-//						mainHandler.sendMessage(msg);
-//					}
-//				});
-//
-//				if (result <= 0) {
-//					Log.e("ConnectTask", "connect failed");
-//					return null;
-//				} else {
-//					sessionId = result;
-//					portFordwordId = 0;
-//					Log.d("ConnectTask", "Session mode: " + SessionManager.getInstance().getSessionInfo(sessionId).getMode());
-//				}
-//			}
+                try {
+                    mSession.removeStream(stream);
+                }
+                catch (WhisperException e) {
+                    e.printStackTrace();
+                }
+            }
 
-			return true;
-		}
-		
-		@Override
-		protected void onPostExecute(Boolean result) {
-			connectTask = null;
-			if (result) {
-				Intent intent = new Intent();
-				intent.setAction("DeviceConnected");
-				intent.putExtra("deviceId", Device.this.getDeviceId());
-				MainApp.getAppContext().sendBroadcast(intent);
-			}
-			else {
-			}
-		}
-	}
-	
-	private class DisconnectTask extends AsyncTask<Integer, Void, Void> {
+            mSession.close();
+            mSession = null;
+            mState = StreamState.Closed;
+        }
+    }
 
-		@Override
-		protected Void doInBackground(Integer... params) {
-			return null;
-		}
-	}
+	public void onSessionRequest(String sdp) {
+        mRemotePlaying = true;
+        mSdp = sdp;
 
-//	public void onSessionReceivedData(int sessionId, int channelId, byte[] data)
-//	{
-//		if (sessionId != this.sessionId) {
-//			return;
-//		}
-//	}
-//
-//	public void onSessionClosed(int sessionId, int status)
-//	{
-//		if (sessionId != this.sessionId) {
-//			return;
-//		}
-//
-//		this.sessionId = 0;
-//	}
+        try {
+            if (mStream == null) {
+                if (mSession == null) {
+                    String target = getDeviceId() + "@" + getDeviceId();
+                    mSession = Manager.getInstance().newSession(target, TransportType.ICE);
+                }
 
+                mStream = mSession.addStream(StreamType.Application, 0, this);
+            }
+            else if (mState == StreamState.TransportReady) {
+                mSession.replyRequest(0, null);
+                mSession.start(mSdp);
+            }
+        }
+        catch (WhisperException e) {
+            e.printStackTrace();
+            connectFailed();
+        }
+    }
+
+    private void sendSessionRequest() throws WhisperException {
+        mSession.request(new SessionRequestCompleteHandler() {
+            @Override
+            public void onCompletion(Session session, int status, String reason, String sdp) {
+                if (session != mSession || mState != StreamState.TransportReady) {
+                    return;
+                }
+
+                if (status == 0) {
+                    try {
+                        session.start(sdp);
+                    } catch (WhisperException e) {
+                        e.printStackTrace();
+                        connectFailed();
+                    }
+                } else {
+                    Log.e(TAG, "session invite response : " + reason);
+                    connectFailed();
+                }
+            }
+        });
+    }
+
+    private void sendVideoCommand() {
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("type", "modify");
+            jsonObject.put("camera", true);
+
+            Whisper.getInstance().sendFriendMessage(getDeviceId(), jsonObject.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void connectFailed() {
+        HashMap<String, Object> status = new HashMap();
+        status.put("type", "sync");
+        status.put("camera", false);
+
+        if (mVideoDecoder != null) {
+            mVideoDecoder.stop();
+            mVideoDecoder = null;
+
+            Intent intent = new Intent(DeviceManager.ACTION_DEVICE_STATUS_CHANGED);
+            intent.putExtra("deviceId", getDeviceId());
+            intent.putExtra("status", status);
+            MainApp.getAppContext().sendBroadcast(intent);
+        }
+
+        if (mRemotePlaying) {
+            mRemotePlaying = false;
+            mSdp = null;
+
+            JSONObject jsonObject = new JSONObject(status);
+
+            try {
+                Whisper.getInstance().sendFriendMessage(getDeviceId(), jsonObject.toString());
+            } catch (WhisperException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void onStateChanged(Stream stream, StreamState state) {
+        if (stream != mStream) {
+            return;
+        }
+
+        Log.i(TAG, "Stream state changed : " + state);
+        mState = state;
+
+        switch (state) {
+            case Initialized:
+                try {
+                    if (mRemotePlaying == true && mSdp != null) {
+                        mSession.replyRequest(0, null);
+                    }
+                    else {
+                        sendSessionRequest();
+                    }
+                }
+                catch (WhisperException e) {
+                    e.printStackTrace();
+                    connectFailed();
+                }
+                break;
+
+            case TransportReady:
+                if (mRemotePlaying == true && mSdp != null) {
+                    try {
+                        mSession.start(mSdp);
+                    } catch (WhisperException e) {
+                        e.printStackTrace();
+                        connectFailed();
+                    }
+                }
+                break;
+
+            case Connecting:
+                break;
+
+            case Connected:
+                if (mVideoDecoder != null) {
+                    sendVideoCommand();
+                }
+                break;
+
+            default:
+                disconnect();
+                break;
+        }
+    }
+
+    public void onStreamData(Stream stream, byte[] data) {
+        if (stream != mStream) {
+            return;
+        }
+
+        try {
+            Log.i(TAG, "onStreamData : " + data.length);
+            mVideoDecoder.decode(data);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

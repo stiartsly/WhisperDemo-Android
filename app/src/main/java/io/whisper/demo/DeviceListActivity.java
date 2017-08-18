@@ -22,10 +22,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.wang.avi.AVLoadingIndicatorView;
+
 import io.whisper.demo.device.Device;
 import io.whisper.demo.device.DeviceManager;
 import io.whisper.exceptions.WhisperException;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -44,6 +47,7 @@ public class DeviceListActivity extends AppCompatActivity {
      */
     private boolean mTwoPane;
     private DeviceRecyclerViewAdapter adapter;
+    private AVLoadingIndicatorView loadingIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +68,8 @@ public class DeviceListActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.device_list);
         setupRecyclerView(recyclerView);
+
+        loadingIndicator = (AVLoadingIndicatorView) findViewById(R.id.loadingIndicator);
 
         if (findViewById(R.id.device_detail_container) != null) {
             // The detail container view will be present only in the
@@ -209,30 +215,30 @@ public class DeviceListActivity extends AppCompatActivity {
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (holder.mDevice != null && !holder.mDevice.online) {
-                        return;
+                    final Device device = holder.mDevice;
+                    if (device == null) {
+                        selectDevice(null);
                     }
-
-                    if (mTwoPane) {
-                        Bundle arguments = new Bundle();
-                        if (holder.mDevice != null) {
-                            arguments.putString(DeviceDetailFragment.ARG_ITEM_ID,
-                                    holder.mDevice.getDeviceId());
+                    else if (device.online) {
+                        if (device.status != null) {
+                            selectDevice(device);
                         }
-                        DeviceDetailFragment fragment = new DeviceDetailFragment();
-                        fragment.setArguments(arguments);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.device_detail_container, fragment)
-                                .commit();
-                    } else {
-                        Context context = v.getContext();
-                        Intent intent = new Intent(context, DeviceDetailActivity.class);
-                        if (holder.mDevice != null) {
-                            intent.putExtra(DeviceDetailFragment.ARG_ITEM_ID,
-                                    holder.mDevice.getDeviceId());
-                        }
+                        else {
+                            loadingIndicator.show();
+                            DeviceManager.sharedManager().getDeviceStatus(device,
+                                    new DeviceManager.TaskCompletionListener() {
+                                        @Override
+                                        public void onSuccess(HashMap<String, Object> result) {
+                                            loadingIndicator.hide();
+                                            selectDevice(device);
+                                        }
 
-                        context.startActivity(intent);
+                                        @Override
+                                        public void onError(Exception exception) {
+                                            loadingIndicator.hide();
+                                        }
+                                    });
+                        }
                     }
                 }
             });
@@ -273,6 +279,27 @@ public class DeviceListActivity extends AppCompatActivity {
             @Override
             public String toString() {
                 return super.toString() + " '" + mTitleView.getText() + "'";
+            }
+        }
+
+        private void selectDevice(Device device) {
+            if (mTwoPane) {
+                Bundle arguments = new Bundle();
+                if (device != null) {
+                    arguments.putString(DeviceDetailFragment.ARG_ITEM_ID, device.getDeviceId());
+                }
+                DeviceDetailFragment fragment = new DeviceDetailFragment();
+                fragment.setArguments(arguments);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.device_detail_container, fragment)
+                        .commit();
+            } else {
+                Intent intent = new Intent(DeviceListActivity.this, DeviceDetailActivity.class);
+                if (device != null) {
+                    intent.putExtra(DeviceDetailFragment.ARG_ITEM_ID, device.getDeviceId());
+                }
+
+                startActivity(intent);
             }
         }
     }

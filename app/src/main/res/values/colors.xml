@@ -10,4 +10,5 @@
     <color name="listDividerBackground">#DDDDDD</color>
     <color name="scanCornerColor">#1379D6</color>
     <color name="deviceDetailTextColor">#999999</color>
+    <color name="loadingIndicatorColor">#999999</color>
 </resources>

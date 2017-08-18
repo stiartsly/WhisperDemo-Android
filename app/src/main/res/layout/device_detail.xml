@@ -7,168 +7,22 @@
     android:filterTouchesWhenObscured="true"
     tools:context="io.whisper.demo.DeviceDetailFragment">
 
-    <TextView
+    <LinearLayout
         android:id="@+id/device_detail_example"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:padding="8dp"
-        android:textColor="@color/deviceDetailTextColor"
-        android:textSize="@dimen/section_header_text_size"
-        android:text="示例" />
+        android:orientation="vertical">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@android:color/white">
-
-        <View
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/listDividerBackground" />
-
-        <ImageView
-            android:id="@+id/iconBulb"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginLeft="16dp"
-            android:layout_centerVertical="true"
-            android:src="@drawable/bulb" />
-
-        <com.suke.widget.SwitchButton
-            android:id="@+id/switchBulb"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            app:sb_show_indicator="false"
-            app:sb_enable_effect="false"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_alignParentBottom="true"
-            android:background="@color/listDividerBackground" />
-
-    </RelativeLayout>
-
-
-    <TextView
-        android:id="@+id/device_detail_torch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:padding="8dp"
-        android:textColor="@color/deviceDetailTextColor"
-        android:textSize="@dimen/section_header_text_size"
-        android:text="手电筒" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@android:color/white">
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/listDividerBackground" />
-
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginLeft="16dp"
-            android:layout_centerVertical="true"
-            android:src="@drawable/torch" />
-
-        <com.suke.widget.SwitchButton
-            android:id="@+id/switchTorch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="16dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            app:sb_show_indicator="false"
-            app:sb_enable_effect="false" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_alignParentBottom="true"
-            android:background="@color/listDividerBackground" />
-
-    </RelativeLayout>
-
-
-    <TextView
-        android:id="@+id/device_detail_brightness"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:padding="8dp"
-        android:textColor="@color/deviceDetailTextColor"
-        android:textSize="@dimen/section_header_text_size"
-        android:text="亮度" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@android:color/white">
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/listDividerBackground" />
-
-        <ImageView
-            android:id="@+id/iconBrightness"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginLeft="16dp"
-            android:layout_centerVertical="true"
-            android:src="@drawable/brightness" />
-
-        <SeekBar
-            android:id="@+id/seekBarBrightness"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="8dp"
-            android:layout_toEndOf="@+id/iconBrightness"
-            android:thumb="@drawable/seekbar_thumb" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_alignParentBottom="true"
-            android:background="@color/listDividerBackground" />
-
-    </RelativeLayout>
-
-
-    <TextView
-        android:id="@+id/device_detail_audio"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:padding="8dp"
-        android:textColor="@color/deviceDetailTextColor"
-        android:textSize="@dimen/section_header_text_size"
-        android:text="声音" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@android:color/white">
+            android:padding="8dp"
+            android:textColor="@color/deviceDetailTextColor"
+            android:textSize="@dimen/section_header_text_size"
+            android:text="示例" />
 
         <View
             android:layout_width="match_parent"
@@ -177,7 +31,170 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="54dp">
+            android:layout_height="56dp"
+            android:background="@android:color/white">
+
+            <ImageView
+                android:id="@+id/iconBulb"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginLeft="16dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/bulb" />
+
+            <com.suke.widget.SwitchButton
+                android:id="@+id/switchBulb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="16dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                app:sb_show_indicator="false"
+                app:sb_enable_effect="false"/>
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/listDividerBackground" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/device_detail_torch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:padding="8dp"
+            android:textColor="@color/deviceDetailTextColor"
+            android:textSize="@dimen/section_header_text_size"
+            android:text="手电筒" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/listDividerBackground" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@android:color/white">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginLeft="16dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/torch" />
+
+            <com.suke.widget.SwitchButton
+                android:id="@+id/switchTorch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="16dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                app:sb_show_indicator="false"
+                app:sb_enable_effect="false" />
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/listDividerBackground" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/device_detail_brightness"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:padding="8dp"
+            android:textColor="@color/deviceDetailTextColor"
+            android:textSize="@dimen/section_header_text_size"
+            android:text="亮度" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/listDividerBackground" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@android:color/white">
+
+            <ImageView
+                android:id="@+id/iconBrightness"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginLeft="16dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/brightness" />
+
+            <SeekBar
+                android:id="@+id/seekBarBrightness"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="8dp"
+                android:layout_toEndOf="@+id/iconBrightness"
+                android:thumb="@drawable/seekbar_thumb" />
+
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/listDividerBackground" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/device_detail_audio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:padding="8dp"
+            android:textColor="@color/deviceDetailTextColor"
+            android:textSize="@dimen/section_header_text_size"
+            android:text="声音" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/listDividerBackground" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp">
 
             <ImageView
                 android:layout_width="32dp"
@@ -207,7 +224,7 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="54dp">
+            android:layout_height="56dp">
 
             <ImageView
                 android:id="@+id/iconVolume"
@@ -235,38 +252,49 @@
 
     </LinearLayout>
 
-    <TextView
+    <LinearLayout
         android:id="@+id/device_detail_video"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:padding="8dp"
-        android:textColor="@color/deviceDetailTextColor"
-        android:textSize="@dimen/section_header_text_size"
-        android:text="摄像头" />
+        android:orientation="vertical">
 
-    <android.support.percent.PercentFrameLayout
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:padding="8dp"
+            android:textColor="@color/deviceDetailTextColor"
+            android:textSize="@dimen/section_header_text_size"
+            android:text="摄像头" />
+
+        <android.support.percent.PercentFrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/videoView"
+                android:background="@color/black"
+                android:scaleType="centerCrop"
+                app:layout_widthPercent="100%"
+                app:layout_aspectRatio="133%" />
+
+            <ImageButton
+                android:id="@+id/buttonVideoPlay"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:background="#00000000"
+                android:scaleType="centerInside"
+                android:src="@drawable/media_play" />
+
+        </android.support.percent.PercentFrameLayout>
+
+    </LinearLayout>
+
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp">
-
-        <SurfaceView
-            android:id="@+id/surfaceView"
-            android:background="@color/black"
-            app:layout_widthPercent="100%"
-            app:layout_aspectRatio="133%" />
-
-        <ImageButton
-            android:id="@+id/buttonVideoPlay"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="center"
-            android:background="#00000000"
-            android:scaleType="centerInside"
-            android:src="@drawable/media_play" />
-
-    </android.support.percent.PercentFrameLayout>
+        android:layout_height="32dp" />
 
 </LinearLayout>

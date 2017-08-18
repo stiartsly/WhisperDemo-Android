@@ -9,7 +9,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -30,10 +34,9 @@ import io.whisper.demo.device.DeviceManager;
  * in two-pane mode (on tablets) or a {@link DeviceDetailActivity}
  * on handsets.
  */
-public class DeviceDetailFragment extends Fragment {
+public class DeviceDetailFragment extends Fragment implements SurfaceHolder.Callback {
 
     private static final int MSG_SET_BULB_FAILED = 1;
-    private static final int MSG_SET_TORCH_FAILED = 2;
 
     /**
      * The fragment argument representing the item ID that this fragment
@@ -46,12 +49,19 @@ public class DeviceDetailFragment extends Fragment {
      */
     private Device mDevice;
 
+    private View mViewBulb;
     private ImageView mIconBulb;
     private SwitchButton mSwitchBulb;
+    private View mViewTorch;
     private SwitchButton mSwitchTorch;
+    private View mViewBrightness;
     private SeekBar mSeekBarBrightness;
+    private View mViewRing;
     private ImageButton mButtonRing;
     private SeekBar mSeekBarVolume;
+    private View mViewVideo;
+    private View mVideoView;
+    private ImageButton mButtonVideo;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -89,31 +99,72 @@ public class DeviceDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.device_detail, container, false);
-        mIconBulb = (ImageView) rootView.findViewById(R.id.iconBulb);
-        mSwitchBulb = (SwitchButton) rootView.findViewById(R.id.switchBulb);
-        mSwitchTorch = (SwitchButton) rootView.findViewById(R.id.switchTorch);
-        mSeekBarBrightness = (SeekBar) rootView.findViewById(R.id.seekBarBrightness);
-        mButtonRing = (ImageButton) rootView.findViewById(R.id.buttonAudioPlay);
-        mSeekBarVolume = (SeekBar) rootView.findViewById(R.id.seekBarVolume);
 
+        mViewBulb = rootView.findViewById(R.id.device_detail_example);
+        mIconBulb = (ImageView) mViewBulb.findViewById(R.id.iconBulb);
+        mSwitchBulb = (SwitchButton) mViewBulb.findViewById(R.id.switchBulb);
         mSwitchBulb.setOnCheckedChangeListener(switchBulbCheckedChange);
+
+        mViewTorch = rootView.findViewById(R.id.device_detail_torch);
+        mSwitchTorch = (SwitchButton) mViewTorch.findViewById(R.id.switchTorch);
         mSwitchTorch.setOnCheckedChangeListener(switchTorchCheckedChange);
-        mSeekBarBrightness.setProgress(mSeekBarBrightness.getMax() / 2);
+
+        mViewBrightness = rootView.findViewById(R.id.device_detail_brightness);
+        mSeekBarBrightness = (SeekBar) mViewBrightness.findViewById(R.id.seekBarBrightness);
         mSeekBarBrightness.setOnSeekBarChangeListener(seekBarBrightnessChangeListener);
+
+        mViewRing = rootView.findViewById(R.id.device_detail_audio);
+        mButtonRing = (ImageButton) mViewRing.findViewById(R.id.buttonAudioPlay);
         mButtonRing.setOnClickListener(buttonRingOnClick);
-        mSeekBarVolume.setProgress(mSeekBarVolume.getMax());
+        mSeekBarVolume = (SeekBar) mViewRing.findViewById(R.id.seekBarVolume);
         mSeekBarVolume.setOnSeekBarChangeListener(seekBarVolumeChangeListener);
 
+        mViewVideo = rootView.findViewById(R.id.device_detail_video);
+        mVideoView = mViewVideo.findViewById(R.id.videoView);
+        if (!VideoDecoder.USE_FFMPEG) {
+            ((SurfaceView)mVideoView).getHolder().addCallback(this);
+        }
+        mButtonVideo = (ImageButton) mViewVideo.findViewById(R.id.buttonVideoPlay);
+        mButtonVideo.setOnClickListener(buttonVideoOnClick);
+
         return rootView;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mButtonVideo.isSelected()) {
+            if (mDevice != null) {
+                mDevice.stopVideo();
+            }
+            else {
+                DeviceManager.sharedManager().stopVideo();
+            }
+            mButtonVideo.setSelected(false);
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        HashMap<String, Object> status = DeviceManager.sharedManager().getDeviceStatus(mDevice);
-        if (status != null) {
-            updateView(status);
+        if (mDevice == null) {
+            DeviceManager.sharedManager().getDeviceStatus(mDevice,
+                    new DeviceManager.TaskCompletionListener() {
+                        @Override
+                        public void onSuccess(HashMap<String, Object> result) {
+                            configureView(result);
+                        }
+
+                        @Override
+                        public void onError(Exception exception) {
+
+                        }
+                    });
+        }
+        else {
+            configureView(mDevice.status);
         }
     }
 
@@ -121,6 +172,91 @@ public class DeviceDetailFragment extends Fragment {
     public void onDestroy() {
         getActivity().unregisterReceiver(broadcastReceiver);
         super.onDestroy();
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        Log.i("Surface", "surfaceCreated");
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width,
+                               int height) {
+        Log.i("Surface", "surfaceChanged, width = " + width + ", height = " + height);
+        Surface surface = holder.getSurface();
+        Log.d("Surface", "surface = " + surface);
+        if (mButtonVideo.isSelected()) {
+            if (mDevice != null) {
+                mDevice.startVideo(mVideoView);
+            }
+            else {
+                DeviceManager.sharedManager().startVideo(mVideoView);
+            }
+        }
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        Log.i("Surface", "surfaceDestroyed");
+        if (mButtonVideo.isSelected()) {
+            if (mDevice != null) {
+                mDevice.stopVideo();
+            }
+            else {
+                DeviceManager.sharedManager().stopVideo();
+            }
+            mButtonVideo.setSelected(false);
+        }
+    }
+
+    private void configureView(HashMap<String, Object> status) {
+        Object bulb = status.get("bulb");
+        if (bulb != null) {
+            mIconBulb.setSelected((Boolean) bulb);
+            mSwitchBulb.setChecked((Boolean) bulb);
+        }
+        else {
+            mViewBulb.setVisibility(View.GONE);
+        }
+
+        Object torch = status.get("torch");
+        if (torch != null) {
+            mSwitchTorch.setChecked((Boolean) torch);
+            mSwitchTorch.setEnabled(true);
+        }
+        else {
+            mViewTorch.setVisibility(View.GONE);
+        }
+
+        Object brightness = status.get("brightness");
+        if (brightness != null) {
+            int newValue = (int) (((Number) brightness).floatValue() * mSeekBarBrightness.getMax());
+            mSeekBarBrightness.setProgress(newValue);
+        }
+        else {
+            mViewBrightness.setVisibility(View.GONE);
+        }
+
+        Object ring = status.get("ring");
+        if (ring != null) {
+            mButtonRing.setSelected((Boolean)ring);
+            Object volume = status.get("volume");
+            if (volume != null) {
+                int newValue = (int) (((Number) volume).floatValue() * mSeekBarVolume.getMax());
+                mSeekBarVolume.setProgress(newValue);
+            }
+        }
+        else {
+            mViewRing.setVisibility(View.GONE);
+        }
+
+        Object video = status.get("camera");
+        if (video != null) {
+            mButtonVideo.setSelected(false); // (Boolean)video
+        }
+        else {
+            mViewVideo.setVisibility(View.GONE);
+        }
     }
 
     private void updateView(HashMap<String, Object> status) {
@@ -134,10 +270,6 @@ public class DeviceDetailFragment extends Fragment {
         if (torch != null) {
             mSwitchTorch.setChecked((Boolean) torch);
             mSwitchTorch.setEnabled(true);
-        }
-        else if (((String) status.get("type")).equals("status")) {
-            mSwitchTorch.setChecked(false);
-            mSwitchTorch.setEnabled(false);
         }
 
         Object brightness = status.get("brightness");
@@ -155,6 +287,11 @@ public class DeviceDetailFragment extends Fragment {
         if (volume != null) {
             int newValue = (int) (((Number) volume).floatValue() * mSeekBarVolume.getMax());
             mSeekBarVolume.setProgress(newValue);
+        }
+
+        Object video = status.get("camera");
+        if (video != null) {
+            mButtonVideo.setSelected((Boolean)video);
         }
     }
 
@@ -179,11 +316,6 @@ public class DeviceDetailFragment extends Fragment {
                 case MSG_SET_BULB_FAILED: {
                     boolean oldStatus = msg.arg1 == 1;
                     mSwitchBulb.setChecked(oldStatus);
-                }
-                    break;
-                case MSG_SET_TORCH_FAILED: {
-                    boolean oldStatus = msg.arg1 == 1;
-                    mSwitchTorch.setChecked(oldStatus);
                 }
                     break;
             }
@@ -212,10 +344,13 @@ public class DeviceDetailFragment extends Fragment {
                     if (!DeviceManager.sharedManager().setTorchStatus(isChecked, mDevice)) {
                         Toast.makeText(getActivity(), "操作失败", Toast.LENGTH_SHORT).show();
 
-                        Message msg = Message.obtain();
-                        msg.what = MSG_SET_TORCH_FAILED;
-                        msg.arg1 = isChecked ? 0 : 1;
-                        mHandler.sendMessage(msg);
+                        final boolean oldStatus = !isChecked;
+                        mSwitchTorch.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mSwitchTorch.setChecked(oldStatus);
+                            }
+                        });
                     }
                 }
             };
@@ -287,6 +422,41 @@ public class DeviceDetailFragment extends Fragment {
 
                         Integer oldValue = (Integer) seekBar.getTag();
                         seekBar.setProgress(oldValue);
+                    }
+                }
+            };
+
+    private View.OnClickListener buttonVideoOnClick =
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    boolean playing = mButtonVideo.isSelected();
+                    if (playing) {
+                        if (mDevice != null) {
+                            mDevice.stopVideo();
+                        }
+                        else {
+                            DeviceManager.sharedManager().stopVideo();
+                        }
+                        mButtonVideo.setSelected(false);
+                    }
+                    else {
+                        if (mDevice != null) {
+                            if (mDevice.startVideo(mVideoView)) {
+                                mButtonVideo.setSelected(true);
+                            }
+                            else {
+                                Toast.makeText(getActivity(), "开启远程摄像头失败", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        else {
+                            if (DeviceManager.sharedManager().startVideo(mVideoView)) {
+                                mButtonVideo.setSelected(true);
+                            }
+                            else {
+                                Toast.makeText(getActivity(), "开启摄像头失败", Toast.LENGTH_SHORT).show();
+                            }
+                        }
                     }
                 }
             };

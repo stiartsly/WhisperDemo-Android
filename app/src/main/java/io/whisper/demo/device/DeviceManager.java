@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.View;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,8 +33,9 @@ import io.whisper.demo.R;
 import io.whisper.core.*;
 import io.whisper.session.Manager;
 import io.whisper.exceptions.WhisperException;
+import io.whisper.session.ManagerHandler;
 
-public class DeviceManager implements WhisperHandler {
+public class DeviceManager implements WhisperHandler, ManagerHandler {
 
     public static final String ACTION_CONNECTION_STATUS_CHANGED =
             "io.whisper.demo.CONNECTION_STATUS_CHANGED";
@@ -76,6 +78,22 @@ public class DeviceManager implements WhisperHandler {
     private boolean isTorchAvailbale = false;
     private MediaPlayer audioPlayer = null;
     private float audioVolume = 1;
+    private View videoView = null;
+
+    public interface TaskCompletionListener {
+        void onSuccess(HashMap<String, Object> result);
+        void onError(Exception exception);
+    }
+    private TaskCompletionListener taskListener = null;
+    private Device taskDevice = null;
+    private Runnable taskDelayRunnable = new Runnable() {
+        @Override
+        public void run() {
+            taskListener.onError(null);
+            taskListener = null;
+            taskDevice = null;
+        }
+    };
 
     public DeviceManager() {
 		super();
@@ -248,7 +266,7 @@ public class DeviceManager implements WhisperHandler {
             options.setTurnHost(turnServer);
             options.setTurnUserName(turnUsername);
             options.setTurnPassword(turnPassword);
-            Manager.getInstance(whisper, options);
+            Manager.getInstance(whisper, options, this);
         }
         catch (WhisperException e) {
             e.printStackTrace();
@@ -363,8 +381,19 @@ public class DeviceManager implements WhisperHandler {
             JSONObject msg = new JSONObject(message);
             String msgType = msg.getString("type");
             if (msgType.equals("query")) {
-                JSONObject selfStatus = new JSONObject(getDeviceStatus(null));
-                sendMessage(selfStatus, from);
+                final String srcDeviceId = from;
+                getDeviceStatus(null, new TaskCompletionListener() {
+                    @Override
+                    public void onSuccess(HashMap<String, Object> result) {
+                        JSONObject selfStatus = new JSONObject(result);
+                        sendMessage(selfStatus, srcDeviceId);
+                    }
+
+                    @Override
+                    public void onError(Exception exception) {
+
+                    }
+                });
             }
             else if (msgType.equals("modify")) {
                 Object bulb = msg.opt("bulb");
@@ -400,12 +429,44 @@ public class DeviceManager implements WhisperHandler {
                     setVolume(((Number)volume).floatValue(), null);
                 }
             }
-            else if (msgType.equals("status") || msgType.equals("sync")) {
-                HashMap<String, Object> newStatus = new HashMap();
+            else if (msgType.equals("status")) {
+                final HashMap<String, Object> newStatus = new HashMap();
                 Iterator<String> keys = msg.keys();
                 while (keys.hasNext()) {
                     String key = keys.next();
                     newStatus.put(key, msg.get(key));
+                }
+
+                String deviceId = from.split("@")[0];
+                Device device = deviceMap.get(deviceId);
+                device.status = newStatus;
+
+                if (device == taskDevice) {
+                    mainHandler.removeCallbacks(taskDelayRunnable);
+
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            taskListener.onSuccess(newStatus);
+                            taskListener = null;
+                            taskDevice = null;
+                        }
+                    });
+                }
+            }
+            else if (msgType.equals("sync")) {
+                String deviceId = from.split("@")[0];
+                Device device = deviceMap.get(deviceId);
+
+                HashMap<String, Object> newStatus = new HashMap();
+                Iterator<String> keys = msg.keys();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    Object value = msg.get(key);
+                    newStatus.put(key, value);
+                    if (device.status != null) {
+                        device.status.put(key, value);
+                    }
                 }
 
                 Intent intent = new Intent(ACTION_DEVICE_STATUS_CHANGED);
@@ -423,6 +484,11 @@ public class DeviceManager implements WhisperHandler {
 	public void onFriendInviteRequest(Whisper whisper, String from, String message) {
 		Log.i(TAG, "onFriendInviteRequest from: " + from + ", with hell message: " + message);
 	}
+
+    public void onSessionRequest(Whisper whisper, String from, String sdp) {
+        String deviceId = from.split("@")[0];
+        deviceMap.get(deviceId).onSessionRequest(sdp);
+    }
 
     private Handler mainHandler = new MainHandler();
     private class MainHandler extends Handler {
@@ -547,18 +613,22 @@ public class DeviceManager implements WhisperHandler {
         }
     }
 
-    public HashMap<String, Object> getDeviceStatus(Device device) {
+    public void getDeviceStatus(Device device, TaskCompletionListener listener) {
         if (device != null) {
             try {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("type", "query");
                 sendMessage(jsonObject, device);
+
+                taskListener = listener;
+                taskDevice = device;
+                mainHandler.postDelayed(taskDelayRunnable, 5000);
             }
             catch (JSONException e) {
                 e.printStackTrace();
+                taskListener.onError(e);
             }
-
-            return null;
+            return;
         }
 
         HashMap<String, Object> selfStatus = new HashMap();
@@ -576,8 +646,9 @@ public class DeviceManager implements WhisperHandler {
 
         selfStatus.put("ring", audioPlayer != null ? audioPlayer.isPlaying() : false);
         selfStatus.put("volume", audioVolume);
+        selfStatus.put("camera", false);
 
-        return selfStatus;
+        listener.onSuccess(selfStatus);
     }
 
     public boolean setBulbStatus(boolean on, Device device) {
@@ -764,5 +835,14 @@ public class DeviceManager implements WhisperHandler {
         }
 
         return result;
+    }
+
+    public boolean startVideo(View videoView) {
+        //this.videoView = videoView;
+        return false;
+    }
+
+    public void stopVideo() {
+        this.videoView = null;
     }
 }
