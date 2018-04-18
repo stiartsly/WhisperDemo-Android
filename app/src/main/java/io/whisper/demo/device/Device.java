@@ -15,16 +15,17 @@ import io.whisper.core.FriendInfo;
 import io.whisper.demo.VideoDecoder;
 import io.whisper.exceptions.WhisperException;
 import io.whisper.session.AbstractStreamHandler;
+import io.whisper.session.IceTransportOptions;
 import io.whisper.session.Manager;
 import io.whisper.session.Session;
 import io.whisper.session.SessionRequestCompleteHandler;
 import io.whisper.session.Stream;
 import io.whisper.session.StreamState;
 import io.whisper.session.StreamType;
+import io.whisper.session.TransportOptions;
 import io.whisper.session.TransportType;
 
 public class Device extends AbstractStreamHandler {
-
     private static final String TAG = Device.class.getSimpleName();
 
 	public FriendInfo deviceInfo;
@@ -47,9 +48,9 @@ public class Device extends AbstractStreamHandler {
 		String deviceName = deviceInfo.getLabel();
 		if (deviceName == null || deviceName.length() == 0) {
 			deviceName = deviceInfo.getName();
-			if (deviceName == null || deviceName.length() == 0) {
-				deviceName = deviceInfo.getUserId();
-			}
+		}
+		if (deviceName == null || deviceName.length() == 0) {
+			deviceName = deviceInfo.getUserId();
 		}
 
 		return deviceName;
@@ -60,7 +61,10 @@ public class Device extends AbstractStreamHandler {
             if (mStream == null) {
                 if (mSession == null) {
                     String target = getDeviceId() + "@" + getDeviceId();
-                    mSession = Manager.getInstance().newSession(target, TransportType.ICE);
+                    IceTransportOptions opts = new IceTransportOptions();
+                    opts.setThreadModel(TransportOptions.SHARED_THREAD);
+
+                    mSession = Manager.getInstance().newSession(target, opts);
                 }
 
                 mStream = mSession.addStream(StreamType.Application, 0, this);
@@ -138,7 +142,10 @@ public class Device extends AbstractStreamHandler {
             if (mStream == null) {
                 if (mSession == null) {
                     String target = getDeviceId() + "@" + getDeviceId();
-                    mSession = Manager.getInstance().newSession(target, TransportType.ICE);
+                    IceTransportOptions opts = new IceTransportOptions();
+                    opts.setThreadModel(TransportOptions.SHARED_THREAD);
+
+                    mSession = Manager.getInstance().newSession(target, opts);
                 }
 
                 mStream = mSession.addStream(StreamType.Application, 0, this);

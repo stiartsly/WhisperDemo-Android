@@ -164,9 +164,9 @@ public class AddDeviceActivity extends AppCompatActivity
         }
     }
 
-    private void addDevice(String deviceId) {
+    private void addDevice(String address) {
         try {
-            DeviceManager.sharedManager().pair(deviceId);
+            DeviceManager.sharedManager().pair(address);
             Toast.makeText(this, "授权申请已发送", Toast.LENGTH_SHORT).show();
             finish();
         }

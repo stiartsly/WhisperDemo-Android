@@ -31,11 +31,14 @@ import io.whisper.demo.MainApp;
 
 import io.whisper.demo.R;
 import io.whisper.core.*;
+import io.whisper.session.IceTransportOptions;
 import io.whisper.session.Manager;
 import io.whisper.exceptions.WhisperException;
 import io.whisper.session.ManagerHandler;
+import io.whisper.session.TransportOptions;
+import io.whisper.session.TransportType;
 
-public class DeviceManager implements WhisperHandler, ManagerHandler {
+public class DeviceManager extends AbstractWhisperHandler implements ManagerHandler {
 
     public static final String ACTION_CONNECTION_STATUS_CHANGED =
             "io.whisper.demo.CONNECTION_STATUS_CHANGED";
@@ -54,10 +57,10 @@ public class DeviceManager implements WhisperHandler, ManagerHandler {
 
 	private static final String appId  = "HMWL2aNJKnyjtL7K3e7fCHxFVQ9fCpSW8xvpJG3LtFWW";
 	private static final String appKey = "8e9VnqPJw5NbK2QztwpyzwysT5yQ84i3vWB43wxy2BJz";
-	private static final String apiServerUrl  = "https://whisper.freeddns.org:8443/web/api";
-	private static final String mqttServerUri = "ssl://whisper.freeddns.org:8883";
-	private static final String stunServer  = "whisper.freeddns.org";
-	private static final String turnServer = "whisper.freeddns.org";
+	private static final String apiServerUrl  = "https://ws.iwhisper.io/api";
+	private static final String mqttServerUri = "ssl://mqtt.iwhisper.io:8883";
+	private static final String stunServer  = "iwhisper.io";
+	private static final String turnServer = "iwhisper.io";
 	private static final String turnUsername = "whisper";
 	private static final String turnPassword = "io2016whisper";
 
@@ -184,7 +187,7 @@ public class DeviceManager implements WhisperHandler, ManagerHandler {
 	}
 
 	public void pair(String deviceId) throws WhisperException {
-		whisperInstance.friendRequest(deviceId, "password");
+    	whisperInstance.addFriend(deviceId, "password");
 	}
 
 	public void unPair(Device device) throws WhisperException {
@@ -205,10 +208,11 @@ public class DeviceManager implements WhisperHandler, ManagerHandler {
 		}
 
 		devices.clear();
-        deviceMap.clear();
+		deviceMap.clear();
 
 		Manager sessionManager = Manager.getInstance();
 		if (sessionManager != null) {
+			sessionManager.removeTransport(TransportType.ICE);
 			sessionManager.cleanup();
 		}
 
@@ -260,13 +264,16 @@ public class DeviceManager implements WhisperHandler, ManagerHandler {
                 }
             }
 
-            Manager.Options options = new Manager.Options();
-            options.setTransports(Manager.Options.TRANSPORT_ICE);
-            options.setStunHost(stunServer);
-            options.setTurnHost(turnServer);
-            options.setTurnUserName(turnUsername);
-            options.setTurnPassword(turnPassword);
-            Manager.getInstance(whisper, options, this);
+			Manager.getInstance(whisper, this);
+
+			IceTransportOptions options = new IceTransportOptions();
+			options.setStunHost(stunServer)
+					.setTurnHost(turnServer)
+					.setTurnUserName(turnUsername)
+					.setTurnPassword(turnPassword)
+					.setThreadModel(TransportOptions.SHARED_THREAD);
+
+			Manager.getInstance().addTransport(options);
         }
         catch (WhisperException e) {
             e.printStackTrace();
@@ -308,10 +315,10 @@ public class DeviceManager implements WhisperHandler, ManagerHandler {
 	}
 
 	@Override
-	public void onFriendPresence(Whisper whisper, String friendId, String presence) {
-		Log.i(TAG, "onFriendPresenceChanged: friendId:" + friendId + ",Presence:" + presence);
+	public void onFriendConnection(Whisper whisper, String friendId, ConnectionStatus status) {
+		Log.i(TAG, "Friend " + friendId + " changed to be " + status);
 
-        deviceMap.get(friendId).online = presence.equals("online");
+        deviceMap.get(friendId).online = (status == ConnectionStatus.Connected);
 
         Intent intent = new Intent(ACTION_DEVICE_INFO_CHANGED);
         intent.putExtra("deviceId", friendId);
@@ -355,7 +362,7 @@ public class DeviceManager implements WhisperHandler, ManagerHandler {
 				", with info:" + userInfo + "and mesaage:" + hello);
 
         try {
-            whisper.replyFriendRequest(userId, 0, null, true, null);
+            whisper.acceptFriend(userId, true, null);
         }
         catch (WhisperException e) {
             e.printStackTrace();

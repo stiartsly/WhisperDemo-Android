@@ -189,13 +189,6 @@ public class DeviceListActivity extends AppCompatActivity {
                         holder.mStatusIcon.setVisibility(View.INVISIBLE);
                         break;
 
-                    case Connecting:
-                        holder.mSubtitleView.setText("连接中");
-                        holder.mSubtitleView.setTextColor(android.graphics.Color.BLUE);
-                        holder.mSubtitleView.setVisibility(View.VISIBLE);
-                        holder.mStatusIcon.setVisibility(View.INVISIBLE);
-                        break;
-
                     default:
                         holder.mSubtitleView.setVisibility(View.GONE);
                         holder.mStatusIcon.setVisibility(View.VISIBLE);
