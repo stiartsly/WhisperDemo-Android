@@ -59,8 +59,7 @@ public class DeviceManager extends AbstractWhisperHandler implements ManagerHand
 	private static final String appKey = "8e9VnqPJw5NbK2QztwpyzwysT5yQ84i3vWB43wxy2BJz";
 	private static final String apiServerUrl  = "https://ws.iwhisper.io/api";
 	private static final String mqttServerUri = "ssl://mqtt.iwhisper.io:8883";
-	private static final String stunServer  = "iwhisper.io";
-	private static final String turnServer = "iwhisper.io";
+	private static final String turnServer = "ws.iwhisper.io";
 	private static final String turnUsername = "whisper";
 	private static final String turnPassword = "io2016whisper";
 
@@ -267,7 +266,7 @@ public class DeviceManager extends AbstractWhisperHandler implements ManagerHand
 			Manager.getInstance(whisper, this);
 
 			IceTransportOptions options = new IceTransportOptions();
-			options.setStunHost(stunServer)
+			options.setStunHost(turnServer)
 					.setTurnHost(turnServer)
 					.setTurnUserName(turnUsername)
 					.setTurnPassword(turnPassword)
@@ -294,9 +293,15 @@ public class DeviceManager extends AbstractWhisperHandler implements ManagerHand
 		for (FriendInfo friendInfo : friends) {
 			Device device = new Device();
             device.deviceInfo = friendInfo;
-            device.online = friendInfo.getPresence().equals("online");
+            device.online = (friendInfo.getConnectionStatus() == ConnectionStatus.Connected);
             devices.add(device);
             deviceMap.put(friendInfo.getUserId(), device);
+
+            if (device.online) {
+				Intent intent = new Intent(ACTION_DEVICE_INFO_CHANGED);
+				intent.putExtra("deviceId", device.deviceInfo.getUserId());
+				MainApp.getAppContext().sendBroadcast(intent);
+			}
 		}
 
         Intent intent = new Intent(ACTION_DEVICE_LIST_RECEIVED);
