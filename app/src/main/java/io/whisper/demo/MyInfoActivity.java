@@ -49,7 +49,7 @@ public class MyInfoActivity extends AppCompatActivity {
         }
         else {
             mNameView.setText(userInfo.getName());
-            new CreateQRCodeTask().execute(userInfo.getUserId());
+            new CreateQRCodeTask().execute(DeviceManager.sharedManager().getAddress());
         }
     }
 

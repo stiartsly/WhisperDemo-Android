@@ -185,8 +185,20 @@ public class DeviceManager extends AbstractWhisperHandler implements ManagerHand
         return null;
 	}
 
+	public String getAddress() {
+		String address = "";
+
+		try {
+			address = whisperInstance.getAddress();
+		} catch (WhisperException e) {
+			e.printStackTrace();
+		}
+
+		return address;
+	}
+
 	public void pair(String deviceId) throws WhisperException {
-    	whisperInstance.addFriend(deviceId, "password");
+		whisperInstance.addFriend(deviceId, "password");
 	}
 
 	public void unPair(Device device) throws WhisperException {
