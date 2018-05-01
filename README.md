@@ -1,53 +1,56 @@
 Whisper Demo Run on Android
 ===========================
 
-Whisper Demo is an easy-understand application to show what Whisper framework can do over whisper network. It shows you can use Apps on Android/iOS/Raspberry to control each other with p2p technology.
+## Introduction
+
+Whisper Demo is an exemplary and easy-understand app to show what whisper framework can do over whisper network. It shows you can use apps on Android/iOS/Raspberry to control remote device (vice versa) based on P2P technology.
 
 ## Whisper network types
 
-Two types of whisper network would be supprted:
+Two types of whisper network would be supported:
 
-- Managed whisper network
-- Decentralzied whisper network
+- Managed whisper network (or centralized whisper network)
+- Decentralized whisper network
 
-## Feaures:
+## Features:
 
 The items for remote control currently includes:
 
-- Turn on/off torch (or light)
+- Turn on/off torch (or flashlight)
+- Increase/Decrease screen backgroud light
 - Turn on/off ringtone
 - Increase/Decrease ringtone volume
 - Turn on/off camera video
 
 ## Build from source
 
-You should get source code from the following repository on github.com:
+Run following command to get source code:
 
+```shell
+$ git clone https://github.com/stiartsly/WhisperDemo-Android.git
 ```
-https://github.com/stiartsly/WhisperDemo-Android.git
-```
-Then open this android project with Android studio to build it.
+Then open this project with Android Studio to build app.
 
 ## Build dependencies
 
-Before buiding whisper demo, you have to download and build the following dependencies:
+Before building whisper demo, you have to download and build the following dependencies:
 
-- whisper android framework (vanilla)
+- Whisper Android SDK (currently vanilla)
 - ffmpeg 
 
-As to whisper android sdk, you need to get source from 
+As to dependency **Whisper Android SDK**, you need to get source from 
 
 ```
 https://github.com/stiartsly/whisper-android.git
 ```
-and after building, copy it's ditributions 'io.whisper-debug.aar' to 'app/libs' directory.
+and build it, then copy it's ditribution **io.whisper-debug(release).aar** to **app/libs** directory.
 
-And for dependency 'ffmpeg', please refer to README.md under 'ffmpeg' directory.
+And for dependency **ffmpeg**, please refer to **README.md** under **ffmpeg** directory.
 
 ## Deploy && Run
 
-Run on android phone with android API-21 or higher.
+Run on Android Phone with android **API-21 or higher**.
 
 ## License
 
-Whisper Demo project source code files are made available under the MIT License, located in the LICENSE file.
+MIT
