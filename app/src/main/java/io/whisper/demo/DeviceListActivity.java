@@ -26,7 +26,7 @@ import com.wang.avi.AVLoadingIndicatorView;
 
 import io.whisper.demo.device.Device;
 import io.whisper.demo.device.DeviceManager;
-import io.whisper.exceptions.WhisperException;
+import io.whisper.vanilla.exceptions.WhisperException;
 
 import java.util.HashMap;
 import java.util.List;

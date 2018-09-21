@@ -11,7 +11,7 @@ import android.widget.TextView;
 import cn.bingoogolapple.qrcode.core.BGAQRCodeUtil;
 import cn.bingoogolapple.qrcode.zxing.QRCodeEncoder;
 import io.whisper.demo.device.DeviceManager;
-import io.whisper.core.UserInfo;
+import io.whisper.vanilla.UserInfo;
 
 public class MyInfoActivity extends AppCompatActivity {
 

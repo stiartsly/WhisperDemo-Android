@@ -30,13 +30,13 @@ import java.util.Map;
 import io.whisper.demo.MainApp;
 
 import io.whisper.demo.R;
-import io.whisper.core.*;
-import io.whisper.session.IceTransportOptions;
-import io.whisper.session.Manager;
-import io.whisper.exceptions.WhisperException;
-import io.whisper.session.ManagerHandler;
-import io.whisper.session.TransportOptions;
-import io.whisper.session.TransportType;
+import io.whisper.vanilla.*;
+import io.whisper.vanilla.session.IceTransportOptions;
+import io.whisper.vanilla.session.Manager;
+import io.whisper.vanilla.exceptions.WhisperException;
+import io.whisper.vanilla.session.ManagerHandler;
+import io.whisper.vanilla.session.TransportOptions;
+import io.whisper.vanilla.session.TransportType;
 
 public class DeviceManager extends AbstractWhisperHandler implements ManagerHandler {
 
@@ -144,8 +144,10 @@ public class DeviceManager extends AbstractWhisperHandler implements ManagerHand
                 }
             }
 
-            String deviceId = ((TelephonyManager) MainApp.getAppContext().
+           /* String deviceId = ((TelephonyManager) MainApp.getAppContext().
                     getSystemService(MainApp.getAppContext().TELEPHONY_SERVICE)).getDeviceId();
+            */
+           String deviceId = "abcdefghabcld";
 
             Whisper.Options options = new Whisper.Options();
             options.setAppId(appId);
@@ -207,7 +209,7 @@ public class DeviceManager extends AbstractWhisperHandler implements ManagerHand
 	
 	public void setDeviceName(String deviceId, String deviceName) {
 		try {
-			whisperInstance.LabelFriend(deviceId, deviceName);
+			whisperInstance.labelFriend(deviceId, deviceName);
 		} catch (WhisperException e) {
 			e.printStackTrace();
 		}
